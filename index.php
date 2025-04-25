@@ -1,5 +1,5 @@
 <?php
-include 'check.php';
+include 'check.inc.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,7 +79,7 @@ include 'check.php';
               </a>
               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                 <a class="dropdown-item" href="profile.php">My Profile</a>
-                <a class="dropdown-item" href="orders.php">My Orders</a>
+                <a class="dropdown-item" href="order.html">My Orders</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="logout.php">Logout</a>
               </div>
