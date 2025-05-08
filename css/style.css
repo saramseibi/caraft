@@ -1259,7 +1259,7 @@ button {
   }
   
   .category_title span {
-    color: #853c9d;
+    color: #4e4b57;
   }
   
   .category_subtitle {
@@ -1312,7 +1312,7 @@ button {
   }
   
   .category_card:hover .category_overlay {
-    background: linear-gradient(to top, rgba(150, 34, 222, 0.9), transparent);
+    background: linear-gradient(to top, rgba(99, 100, 108, 0.9), transparent);
   }
   
   .category_name {
@@ -1369,7 +1369,7 @@ button {
   }
   
   .category_tag:hover, .category_tag.active {
-    background-color: #853c9d;
+    background-color: #47474d;
     color: #fff;
   }
   
@@ -1384,7 +1384,7 @@ button {
   
   .explore_btn {
     display: inline-block;
-    background-color: #853c9d;
+    background-color: #68647a;
     color: #fff;
     padding: 12px 30px;
     border-radius: 5px;
@@ -1394,7 +1394,7 @@ button {
   }
   
   .explore_btn:hover {
-    background-color: #853c9d;
+    background-color: #493c9d;
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
     text-decoration: none;
@@ -1580,3 +1580,7 @@ button {
         margin-bottom: 5px;
     }
 }
+
+
+
+

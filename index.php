@@ -92,7 +92,7 @@ include 'check.inc.php';
           <?php endif; ?>
           
           <li class="nav-item">
-            <a class="nav-link" href="#"><img src="images/shopping-bag.png" alt="Cart"></a>
+            <a class="nav-link" href="order.php"><img src="images/shopping-bag.png" alt="Cart"></a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#"><img src="images/search-icon.png" alt="Search"></a>
@@ -308,7 +308,7 @@ include 'check.inc.php';
      
      <div class="category_grid">
        <div class="category_card category_featured">
-         <img src="images/fashion-category.jpg" alt="Fashion" class="category_image">
+         <img src="images/im1.webp" alt="Fashion" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Fashion</h3>
            <p class="category_count">120 products</p>
@@ -317,7 +317,7 @@ include 'check.inc.php';
        </div>
        
        <div class="category_card">
-         <img src="images/electronics-category.jpg" alt="Electronics" class="category_image">
+         <img src="images/im4.webp" alt="Electronics" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Electronics</h3>
            <p class="category_count">85 products</p>
@@ -326,7 +326,7 @@ include 'check.inc.php';
        </div>
        
        <div class="category_card">
-         <img src="images/home-decor-category.jpg" alt="Home Decor" class="category_image">
+         <img src="images/im3.webp" alt="Home Decor" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Home Decor</h3>
            <p class="category_count">64 products</p>
@@ -335,7 +335,7 @@ include 'check.inc.php';
        </div>
        
        <div class="category_card">
-         <img src="images/beauty-category.jpg" alt="Beauty" class="category_image">
+         <img src="images/im6.webp" alt="Beauty" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Beauty</h3>
            <p class="category_count">42 products</p>
@@ -344,7 +344,7 @@ include 'check.inc.php';
        </div>
        
        <div class="category_card">
-         <img src="images/accessories-category.jpg" alt="Accessories" class="category_image">
+         <img src="images/im5.webp" alt="Accessories" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Accessories</h3>
            <p class="category_count">96 products</p>
@@ -353,7 +353,7 @@ include 'check.inc.php';
        </div>
        
        <div class="category_card">
-         <img src="images/shoes-category.jpg" alt="Shoes" class="category_image">
+         <img src="images/im2.webp" alt="Shoes" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Shoes</h3>
            <p class="category_count">78 products</p>
@@ -415,7 +415,7 @@ include 'check.inc.php';
        </div>
        <div class="col-lg-6 col-md-12">
          <div class="about_us_image">
-           <img src="/api/placeholder/600/400" alt="About Us" class="img-fluid about_main_image">
+           <img src="images/undraw_about-us-page_dbh0.svg" alt="About Us" class="img-fluid about_main_image">
          </div>
        </div>
      </div>
@@ -451,7 +451,7 @@ include 'check.inc.php';
        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
          <div class="service_box">
            <div class="service_icon">
-             <i class="fa fa-life-ring"></i>
+           <i class="fa fa-phone" aria-hidden="true"></i>
            </div>
            <h3 class="service_title">24/7 Support</h3>
            <p class="service_description">Our dedicated customer service team is available around the clock to assist with any questions or concerns.</p>
@@ -531,10 +531,7 @@ include 'check.inc.php';
                   </div>
                </div>
             </div>
-            <div class="copyright_section">
-               <h1 class="copyright_text">
-               Copyright 2020 All Right Reserved <a href="https://html.design"> Free Html Templates</a>
-            </div>
+            
          </div>
       </div>
       <!-- footer section end -->
