@@ -2,6 +2,23 @@
 // Initialize the session
 session_start();
 
+// Database connection
+$host = 'localhost';
+$dbname = 'caraft'; 
+$username = 'root';
+$password = '';
+
+try {
+    global $conn; // Make $conn globally accessible
+    $conn = new mysqli($host, $username, $password, $dbname);
+    
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
+    }
+} catch (Exception $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
+
 // Function to check if user is logged in
 function isLoggedIn() {
     return isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true;
