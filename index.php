@@ -59,7 +59,7 @@ include 'check.inc.php';
             <a class="nav-link" href="category.html">Category</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="products.html">Products</a>
+            <a class="nav-link" href="products.php">Products</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="clients.html">Client</a>
@@ -79,7 +79,7 @@ include 'check.inc.php';
               </a>
               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                 <a class="dropdown-item" href="profile.php">My Profile</a>
-                <a class="dropdown-item" href="order.html">My Orders</a>
+                <a class="dropdown-item" href="order.php">My Orders</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="logout.php">Logout</a>
               </div>
