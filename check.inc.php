@@ -24,6 +24,14 @@ function isLoggedIn() {
     return isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true;
 }
 
+// Function to get user's ID if logged in
+function getCurrentUserId() {
+    if (isLoggedIn() && isset($_SESSION["id"])) {
+        return $_SESSION["id"];
+    }
+    return null;
+}
+
 // Function to get user's name if logged in
 function getUserName() {
     if (isLoggedIn() && isset($_SESSION["name"])) {
@@ -39,4 +47,25 @@ function getUserEmail() {
     }
     return false;
 }
-?>
+
+// Function to require login (redirect if not logged in)
+function requireLogin() {
+    if (!isLoggedIn()) {
+        $_SESSION['error'] = "Please log in to continue";
+        header("Location: login.php");
+        exit();
+    }
+}
+
+// Function to display error/success messages
+function displayMessage() {
+    if (isset($_SESSION['error'])) {
+        echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';
+        unset($_SESSION['error']);
+    }
+    
+    if (isset($_SESSION['success'])) {
+        echo '<div class="alert alert-success">' . $_SESSION['success'] . '</div>';
+        unset($_SESSION['success']);
+    }
+}

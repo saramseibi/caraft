@@ -19,7 +19,7 @@ CREATE TABLE  products (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE  order (
+CREATE TABLE  orders (
     id int(11) NOT NULL AUTO_INCREMENT,
     db_id int(11) NOT NULL,
     order_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
