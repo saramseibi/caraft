@@ -1,7 +1,7 @@
 <?php
 require_once 'check.inc.php';
 
-// Debug
+
 error_log("Session data: " . print_r($_SESSION, true));
 
 if (!isset($_SESSION['id'])) {
@@ -21,7 +21,7 @@ $quantity = (int)$_GET['quantity'];
 $db_id = (int)$_SESSION['id'];
 
 try {
-    // Verify product exists and get price
+    // Verify product exists 
     $stmt = $conn->prepare("SELECT id, price FROM products WHERE id = ?");
     $stmt->bind_param("i", $product_id);
     $stmt->execute();
@@ -38,14 +38,14 @@ try {
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
-        // Update quantity
+     
         $cart_item = $result->fetch_assoc();
         $new_quantity = $cart_item['quantity'] + $quantity;
         
         $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE db_id = ? AND product_id = ?");
         $stmt->bind_param("iii", $new_quantity, $db_id, $product_id);
     } else {
-        // Insert new
+        // Insert new 
         $stmt = $conn->prepare("INSERT INTO cart (db_id, product_id, quantity) VALUES (?, ?, ?)");
         $stmt->bind_param("iii", $db_id, $product_id, $quantity);
     }

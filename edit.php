@@ -1,10 +1,10 @@
 <?php
-// Include the check.inc.php file which already starts a session and sets up database connection
+
 require_once 'check.inc.php';
 
 $db_id = 1;
 
-// Fetch current user data
+// Fetch current user 
 $stmt = $conn->prepare("SELECT * FROM db WHERE id = ?");
 if ($stmt === false) {
     echo "SQL Error in prepare: " . $conn->error;
@@ -15,14 +15,14 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-// Process form submission in the same file
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Basic profile update
+        
         $full_name = $_POST['full_name'];
         $email = $_POST['email'];
         
-        // Update basic profile information
+        
         $update_query = "UPDATE db SET 
                         full_name = ?, 
                         email = ?";
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param($param_types, ...$params);
         $stmt->execute();
         
-        // Handle password change
+        //  password change
         if (!empty($_POST['current_password']) && !empty($_POST['new_password'])) {
             $current_password = $_POST['current_password'];
             $new_password = $_POST['new_password'];
@@ -58,11 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pw_check = $result->fetch_assoc();
             $stored_hashed_password = $pw_check['password'];
             
-            // Use password_verify to check if the entered password matches the stored hash
+            //  check if the entered password matches the stored hash
             if (password_verify($current_password, $stored_hashed_password)) {
-                // Password is correct
+                
                 if ($new_password === $confirm_password) {
-                    // Hash the new password
+                    
                     $hashed_new_password = password_hash($new_password, PASSWORD_DEFAULT);
                     
                     $stmt = $conn->prepare("UPDATE db SET password = ? WHERE id = ?");

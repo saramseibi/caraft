@@ -18,6 +18,26 @@ if (isset($_POST['checkout'])) {
     $payment_method = $_POST['payment_method'] ?? '';
     $notes = $_POST['notes'] ?? '';
     
+    // Process Credit Card payment if selected
+    if ($payment_method === 'Credit Card') {
+        $cardholder_name = $_POST['cardholder_name'] ?? '';
+        $card_number = $_POST['card_number'] ?? '';
+        $expiry_date = $_POST['expiry_date'] ?? '';
+        $cvv = $_POST['cvv'] ?? '';
+        $save_card = isset($_POST['save_card']) ? 1 : 0;
+        
+        // Basic validation for card details
+        if (empty($cardholder_name)) {
+            $_SESSION['error'] = "Cardholder name is required";
+        } elseif (empty($card_number)) {
+            $_SESSION['error'] = "Card number is required";
+        } elseif (empty($expiry_date) || !preg_match('/^\d{2}\/\d{2}$/', $expiry_date)) {
+            $_SESSION['error'] = "Valid expiry date is required (MM/YY)";
+        } elseif (empty($cvv) || !preg_match('/^\d{3,4}$/', $cvv)) {
+            $_SESSION['error'] = "Valid CVV is required";
+        }
+    }
+    
     if (empty($shipping_address)) {
         $_SESSION['error'] = "Shipping address is required";
     } elseif (empty($payment_method)) {
@@ -43,11 +63,16 @@ if (isset($_POST['checkout'])) {
                 throw new Exception("Your cart is empty!");
             }
             
-            // Calculate total order amount
-            $total_amount = 0;
+            // Calculate totals
+            $subtotal = 0;
             foreach ($cart_items as $item) {
-                $total_amount += $item['total'];
+                $subtotal += $item['total'];
             }
+            
+            // Calculate tax and shipping
+            $shipping = 5.00;
+            $tax = round($subtotal * 0.08, 2); // 8% tax
+            $total_amount = $subtotal + $shipping + $tax;
             
             // Create new order in the orders table
             $order_stmt = $conn->prepare("
@@ -63,22 +88,36 @@ if (isset($_POST['checkout'])) {
             
             $order_id = $conn->insert_id; // Get the ID of the new order
             
-            // Insert order items into orders_items table
-            // Create the table if it doesn't exist
-            $conn->query("
-                CREATE TABLE IF NOT EXISTS orders_items (
-                    id INT(11) NOT NULL AUTO_INCREMENT,
-                    orders_id INT(11) NOT NULL,
-                    product_id INT(11) NOT NULL,
-                    quantity INT(11) NOT NULL,
-                    price_per_item DECIMAL(10,2) NOT NULL,
-                    PRIMARY KEY (id),
-                    FOREIGN KEY (orders_id) REFERENCES orders(id) ON DELETE CASCADE,
-                    FOREIGN KEY (product_id) REFERENCES products(id)
-                )
-            ");
+            // If Credit Card was used and save_card is checked, store card info
+            if ($payment_method === 'Credit Card' && isset($save_card) && $save_card == 1) {
+                // Create payment_methods table if it doesn't exist
+                $conn->query("
+                    CREATE TABLE IF NOT EXISTS payment_methods (
+                        id INT(11) NOT NULL AUTO_INCREMENT,
+                        db_id INT(11) NOT NULL,
+                        cardholder_name VARCHAR(255) NOT NULL,
+                        card_number VARCHAR(255) NOT NULL,
+                        expiry_date VARCHAR(10) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (id),
+                        FOREIGN KEY (db_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                ");
+                
+                // Store card info (in a real system, this would be encrypted)
+                $last_four = substr(str_replace(' ', '', $card_number), -4);
+                $masked_number = '**** **** **** ' . $last_four;
+                
+                $save_card_stmt = $conn->prepare("
+                    INSERT INTO payment_methods (db_id, cardholder_name, card_number, expiry_date) 
+                    VALUES (?, ?, ?, ?)
+                ");
+                
+                $save_card_stmt->bind_param("isss", $db_id, $cardholder_name, $masked_number, $expiry_date);
+                $save_card_stmt->execute();
+            }
             
-            // Insert items into orders_items
+            // Insert items into orders_items (table already exists, no need to create)
             $items_stmt = $conn->prepare("
                 INSERT INTO orders_items (orders_id, product_id, quantity, price_per_item) 
                 VALUES (?, ?, ?, ?)
@@ -107,6 +146,8 @@ if (isset($_POST['checkout'])) {
             $conn->commit();
             
             $_SESSION['success'] = "Order #$order_id placed successfully!";
+            header("Location: order.php");
+            exit();
         } catch (Exception $e) {
             // Rollback the transaction if any error occurs
             $conn->rollback();
@@ -360,6 +401,12 @@ try {
     $cart_items = [];
 }
 
+// Calculate cart summary for checkout form
+$subtotal = $cart_total;
+$shipping = 5.00;
+$tax = round($subtotal * 0.08, 2); // 8% tax
+$total = $subtotal + $shipping + $tax;
+
 // Fetch user's orders with items
 $orders = [];
 try {
@@ -435,265 +482,7 @@ $user_profile = $_SESSION["profile"] ?? "https://bootdey.com/img/Content/avatar/
     <title>My Orders & Favorites</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .orders-wrapper {
-            padding: 40px 0;
-        }
-        
-        .title {
-            color: #764ba2;
-            font-weight: 700;
-            margin-bottom: 40px;
-        }
-        
-        .order-card, .product-card, .cart-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-        
-        .order-card:hover, .product-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .order-header, .cart-header {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            color: white;
-            padding: 15px 20px;
-        }
-        
-        .order-status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .order-status.completed {
-            background-color: #10b981;
-        }
-        
-        .order-status.processing {
-            background-color: #f59e0b;
-        }
-        
-        .order-status.pending {
-            background-color: #6366f1;
-        }
-        
-        .order-status.cancelled {
-            background-color: #ef4444;
-        }
-        
-        .order-body, .cart-body {
-            padding: 20px;
-        }
-        
-        .order-item, .cart-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .order-item:last-child, .cart-item:last-child {
-            border-bottom: none;
-        }
-        
-        .product-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 15px 15px 0 0;
-        }
-        
-        .product-body {
-            padding: 20px;
-        }
-        
-        .product-price {
-            font-weight: 700;
-            color: #764ba2;
-        }
-        
-        .product-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .btn-like {
-            color: #e11d48;
-        }
-        
-        .btn-cart {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-        }
-        
-        .tab-content {
-            padding-top: 30px;
-        }
-        
-        .nav-tabs .nav-link {
-            color: #6b7280;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 0;
-            position: relative;
-        }
-        
-        .nav-tabs .nav-link.active {
-            color: #764ba2;
-            font-weight: 600;
-            background-color: transparent;
-        }
-        
-        .nav-tabs .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-        }
-        
-        .empty-icon {
-            font-size: 3rem;
-            color: #d1d5db;
-            margin-bottom: 20px;
-        }
-        
-        .sidebar {
-            position: sticky;
-            top: 20px;
-        }
-        
-        .profile-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 30px;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .profile-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.3);
-            margin-bottom: 15px;
-        }
-        
-        .nav-link-sidebar {
-            display: block;
-            padding: 15px;
-            color: #4b5563;
-            border-radius: 10px;
-            margin-bottom: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link-sidebar:hover, .nav-link-sidebar.active {
-            background-color: #f3f4f6;
-            color: #764ba2;
-        }
-        
-        .nav-link-sidebar i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .quantity-control {
-            display: flex;
-            align-items: center;
-        }
-        
-        .quantity-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .quantity-input {
-            width: 40px;
-            text-align: center;
-            border: none;
-            background: transparent;
-        }
-        
-        #checkoutForm {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        
-        #checkoutForm .form-header {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            color: white;
-            padding: 15px 20px;
-        }
-        
-        #checkoutForm .form-body {
-            padding: 20px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5c3b82 0%, #4f61c1 100%);
-        }
-        
-        .section-title {
-            color: #764ba2;
-            font-weight: 600;
-            margin: 30px 0 20px;
-            position: relative;
-            padding-left: 15px;
-        }
-        
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 5px;
-            background: linear-gradient(to bottom, #764ba2, #667eea);
-            border-radius: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/order.css">
 </head>
 <body>
     <div class="container orders-wrapper">
@@ -856,60 +645,131 @@ $user_profile = $_SESSION["profile"] ?? "https://bootdey.com/img/Content/avatar/
                                         </table>
                                     </div>
                                     <div class="d-flex justify-content-end mt-3">
-                                        <button type="button" class="btn btn-primary" onclick="toggleCheckoutForm()">
-                                            <i class="fas fa-shopping-cart me-2"></i> Proceed to Checkout
-                                        </button>
+                                        <form action="" method="post">
+                                            <button type="submit" name="show_checkout" class="btn btn-primary">
+                                                <i class="fas fa-shopping-cart me-2"></i> Proceed to Checkout
+                                            </button>
+                                        </form>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                         
-                        <!-- Checkout Form (Hidden by default) -->
-                        <div id="checkoutForm" style="display: none;">
-                            <div class="form-header">
-                                <h5 class="mb-0">Complete Your Order</h5>
+                        <!-- Checkout Form (Show only when proceeding to checkout) -->
+                        <?php if (!empty($cart_items) && isset($_POST['show_checkout'])): ?>
+                            <div class="checkout-form">
+                                <div class="form-header">
+                                    Complete Your Order
+                                </div>
+                                
+                                <div class="form-body">
+                                    <form action="" method="post">
+                                        <!-- Shipping Address -->
+                                        <div class="form-group">
+                                            <label for="shipping_address" class="form-label">Shipping Address</label>
+                                            <textarea class="form-control" id="shipping_address" name="shipping_address" rows="3" required></textarea>
+                                        </div>
+                                        
+                                        <!-- Payment Method Selection -->
+                                        <div class="form-group">
+                                            <label class="form-label">Payment Method</label>
+                                            <div class="payment-methods">
+                                                <div class="payment-method selected" onclick="selectPaymentMethod(this, 'Credit Card')">
+                                                    <input type="radio" name="payment_method" value="Credit Card" checked>
+                                                    <div class="method-content">
+                                                        <i class="fas fa-credit-card method-icon"></i>
+                                                        <span class="method-name">Credit Card</span>
+                                                    </div>
+                                                </div>
+                                                <div class="payment-method" onclick="selectPaymentMethod(this, 'PayPal')">
+                                                    <input type="radio" name="payment_method" value="PayPal">
+                                                    <div class="method-content">
+                                                        <i class="fab fa-paypal method-icon paypal-icon"></i>
+                                                        <span class="method-name">PayPal</span>
+                                                    </div>
+                                                </div>
+                                                <div class="payment-method" onclick="selectPaymentMethod(this, 'Cash on Delivery')">
+                                                    <input type="radio" name="payment_method" value="Cash on Delivery">
+                                                    <div class="method-content">
+                                                        <i class="fas fa-money-bill-wave method-icon cod-icon"></i>
+                                                        <span class="method-name">Cash on Delivery</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Card Details  -->
+                                        <div id="card-details" class="card-details">
+                                            <div class="form-group">
+                                                <label for="cardholder_name" class="form-label">Cardholder Name</label>
+                                                <input type="text" class="form-control" id="cardholder_name" name="cardholder_name" placeholder="Name as displayed on card">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="card_number" class="form-label">Card Number</label>
+                                                <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19">
+                                            </div>
+                                            
+                                            <div class="card-row">
+                                                <div class="card-col">
+                                                    <label for="expiry_date" class="form-label">Expiry Date</label>
+                                                    <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                                                </div>
+                                                <div class="card-col">
+                                                    <label for="cvv" class="form-label">CVV</label>
+                                                    <div class="cvv-field">
+                                                        <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                                                        <span class="help-tooltip" title="3-digit code on back of card"><i class="fas fa-question-circle"></i></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="save-card">
+                                                <input type="checkbox" id="save_card" name="save_card" value="1">
+                                                <label for="save_card">Save this card for future purchases</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Order Summary -->
+                                        <div class="form-group">
+                                            <label class="form-label">Order Summary</label>
+                                            <div class="order-summary">
+                                                <div class="summary-row">
+                                                    <span>Subtotal</span>
+                                                    <span>$<?php echo number_format($subtotal, 2); ?></span>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <span>Shipping</span>
+                                                    <span>$<?php echo number_format($shipping, 2); ?></span>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <span>Tax</span>
+                                                    <span>$<?php echo number_format($tax, 2); ?></span>
+                                                </div>
+                                                <div class="summary-row total-row">
+                                                    <span>Total</span>
+                                                    <span>$<?php echo number_format($total, 2); ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Order Notes -->
+                                        <div class="form-group">
+                                            <label for="notes" class="form-label">Order Notes (Optional)</label>
+                                            <textarea class="form-control" id="notes" name="notes" placeholder="Special instructions for delivery or preparation"></textarea>
+                                        </div>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="buttons">
+                                            <a href="order.php" class="btn btn-back">Back to Cart</a>
+                                            <button type="submit" name="checkout" class="btn btn-primary">
+                                                <i class="fas fa-lock"></i> Place Order Securely
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="form-body">
-                                <form action="" method="post">
-                                    <div class="mb-3">
-                                        <label for="shippingAddress" class="form-label">Shipping Address</label>
-                                        <textarea class="form-control" id="shippingAddress" name="shipping_address" rows="3" required></textarea>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label class="form-label">Payment Method</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="payment_method" id="creditCard" value="Credit Card" checked>
-                                            <label class="form-check-label" for="creditCard">
-                                                <i class="fab fa-cc-visa me-2"></i>Credit Card
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="PayPal">
-                                            <label class="form-check-label" for="paypal">
-                                                <i class="fab fa-paypal me-2"></i>PayPal
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="Cash on Delivery">
-                                            <label class="form-check-label" for="cod">
-                                                <i class="fas fa-money-bill-wave me-2"></i>Cash on Delivery
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="notes" class="form-label">Order Notes (Optional)</label>
-                                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between">
-                                        <button type="button" class="btn btn-outline-secondary" onclick="toggleCheckoutForm()">Cancel</button>
-                                        <button type="submit" name="checkout" class="btn btn-primary">Place Order</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                        <?php endif; ?>
                         
                         <!-- Order History -->
                         <?php if (!empty($orders)): ?>
@@ -1028,14 +888,58 @@ $user_profile = $_SESSION["profile"] ?? "https://bootdey.com/img/Content/avatar/
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    function toggleCheckoutForm() {
-        var form = document.getElementById("checkoutForm");
-        if (form.style.display === "none") {
-            form.style.display = "block";
+    // select payment method
+    function selectPaymentMethod(element, method) {
+        // Remove selected class from all methods
+        document.querySelectorAll('.payment-method').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked method
+        element.classList.add('selected');
+        
+        // Check the radio button
+        element.querySelector('input[type="radio"]').checked = true;
+        
+        // Show/hide card details based on selection
+        const cardDetails = document.getElementById('card-details');
+        if (method === 'Credit Card') {
+            cardDetails.style.display = 'block';
         } else {
-            form.style.display = "none";
+            cardDetails.style.display = 'none';
         }
     }
+    
+    // Format credit card number with spaces
+    document.getElementById('card_number')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = '';
+        
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += ' ';
+            }
+            formattedValue += value[i];
+        }
+        
+        e.target.value = formattedValue;
+    });
+    
+    // Format expiry date with slash
+    document.getElementById('expiry_date')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        
+        e.target.value = value;
+    });
+    
+    // Limit CVV to numbers only
+    document.getElementById('cvv')?.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
     </script>
 </body>
 </html>

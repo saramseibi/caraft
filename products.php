@@ -431,7 +431,7 @@ $cart_count = $isLoggedIn ? getCartCount($current_db_id) : 0;
                             <a class="nav-link" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="category.php">Category</a>
+                            <a class="nav-link" href="category.html">Category</a>
                         </li>
                         <li class="nav-item active">
                             <a class="nav-link" href="products.php">Products</a>
@@ -504,18 +504,7 @@ $cart_count = $isLoggedIn ? getCartCount($current_db_id) : 0;
     <!-- Page heading -->
     <div class="container mt-4">
         <h2 class="text-center mb-4">Our Products</h2>
-        <?php 
-        // Display any error/success messages
-        if (isset($_SESSION['error'])) {
-            echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';
-            unset($_SESSION['error']);
-        }
-        
-        if (isset($_SESSION['success'])) {
-            echo '<div class="alert alert-success">' . $_SESSION['success'] . '</div>';
-            unset($_SESSION['success']);
-        }
-        ?>
+       
     </div>
     
     <!-- Products grid -->
@@ -608,10 +597,7 @@ $cart_count = $isLoggedIn ? getCartCount($current_db_id) : 0;
                     </div>
                 </div>
             </div>
-            <div class="copyright_section">
-                <h1 class="copyright_text">
-                Copyright 2020 All Right Reserved <a href="https://html.design"> Free Html Templates</a>
-            </div>
+            
         </div>
     </div>
     <!-- footer section end -->
@@ -633,7 +619,7 @@ $cart_count = $isLoggedIn ? getCartCount($current_db_id) : 0;
     <script>
         // Add functionality to the buttons
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap components
+            
             // This ensures the dropdown menu works correctly
             $('.dropdown-toggle').dropdown();
             

@@ -1,8 +1,8 @@
 <?php
-// Include the check.inc.php file which starts a session and sets up database connection
+
 require_once 'check.inc.php';
 
-// Make sure user is logged in
+// check user is logged in
 if (!isLoggedIn()) {
     $_SESSION['error'] = "Please log in to manage your orders";
     header("Location: index.php");
@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
 
 $db_id = $_SESSION["id"] ?? 1;
 
-// Process "Buy Again" action
+//  Buy Again action
 if (isset($_POST['buy_again'])) {
     $order_id = $_POST['order_id'];
     
@@ -59,7 +59,7 @@ if (isset($_POST['buy_again'])) {
     }
 }
 
-// Redirect back to orders page
+
 header("Location: order.php");
 exit();
 ?>

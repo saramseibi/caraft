@@ -1,5 +1,5 @@
 <?php
-// Initialize the session
+
 session_start();
 
 // Database connection
@@ -9,7 +9,7 @@ $username = 'root';
 $password = '';
 
 try {
-    global $conn; // Make $conn globally accessible
+    global $conn; 
     $conn = new mysqli($host, $username, $password, $dbname);
     
     if ($conn->connect_error) {
@@ -19,12 +19,12 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-// Function to check if user is logged in
+//  check if user is logged in
 function isLoggedIn() {
     return isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true;
 }
 
-// Function to get user's ID if logged in
+// get user's ID if logged in
 function getCurrentUserId() {
     if (isLoggedIn() && isset($_SESSION["id"])) {
         return $_SESSION["id"];
@@ -32,7 +32,7 @@ function getCurrentUserId() {
     return null;
 }
 
-// Function to get user's name if logged in
+//  get user's name if logged in
 function getUserName() {
     if (isLoggedIn() && isset($_SESSION["name"])) {
         return $_SESSION["name"];
@@ -40,7 +40,7 @@ function getUserName() {
     return false;
 }
 
-// Function to get user's email if logged in
+//  get user's email if logged in
 function getUserEmail() {
     if (isLoggedIn() && isset($_SESSION["email"])) {
         return $_SESSION["email"];
@@ -48,7 +48,7 @@ function getUserEmail() {
     return false;
 }
 
-// Function to require login (redirect if not logged in)
+// redirect if not logged in
 function requireLogin() {
     if (!isLoggedIn()) {
         $_SESSION['error'] = "Please log in to continue";
@@ -57,7 +57,7 @@ function requireLogin() {
     }
 }
 
-// Function to display error/success messages
+// error/success messages
 function displayMessage() {
     if (isset($_SESSION['error'])) {
         echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';

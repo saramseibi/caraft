@@ -1,8 +1,8 @@
 <?php
-// Include the check.inc.php file
+
 require_once 'check.inc.php';
 
-// Make sure user is logged in
+// check user is logged in
 if (!isLoggedIn()) {
     $_SESSION['error'] = "Please log in to manage your wishlist";
     header("Location: index.php");
@@ -45,7 +45,7 @@ if (isset($_POST['add_to_cart'])) {
                     $update_stmt->bind_param("ii", $new_quantity, $cart_item['id']);
                     $update_stmt->execute();
                 } else {
-                    // Insert new item
+                    // Insert new 
                     $insert_stmt = $conn->prepare("INSERT INTO cart (db_id, product_id, quantity) VALUES (?, ?, 1)");
                     $insert_stmt->bind_param("ii", $db_id, $product_id);
                     $insert_stmt->execute();
@@ -82,7 +82,7 @@ if (isset($_POST['remove_from_wishlist'])) {
     }
 }
 
-// Redirect back to orders page
+
 header("Location: order.php");
 exit();
 ?>
