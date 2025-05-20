@@ -2,39 +2,10 @@
 // Include the check.inc.php file which already starts a session and sets up database connection
 require_once 'check.inc.php';
 
-// For demo purposes, let's use db_id = 1
+
 $db_id = 1;
 
-/*
-echo "Checking database connection...<br>";
-if (!$conn) {
-    echo "Connection is null!<br>";
-} else {
-    echo "Connection established.<br>";
-}*/
-/*
-// Check if exists
-$table_check = $conn->query("SHOW TABLES LIKE 'db'");
-if ($table_check->num_rows == 0) {
-    echo "Table 'db' doesn't exist in the database!<br>";
-} else {
-    echo "Table 'db' exists.<br>";
-}*/
-/*
-//  structure of the table
-$structure = $conn->query("DESCRIBE db");
-if ($structure) {
-    echo "Table structure:<br>";
-    echo "<table border='1'>";
-    echo "<tr><th>Field</th><th>Type</th></tr>";
-    while ($row = $structure->fetch_assoc()) {
-        echo "<tr><td>" . $row['Field'] . "</td><td>" . $row['Type'] . "</td></tr>";
-    }
-    echo "</table><br>";
-} else {
-    echo "Error getting table structure: " . $conn->error . "<br>";
-}
-*/
+
 
 $sql = "SELECT * FROM db WHERE id = " . $db_id;
 $result = $conn->query($sql);
