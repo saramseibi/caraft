@@ -1,4 +1,39 @@
+<?php
+session_start();
 
+// Initialize variables
+$name = $phone = $email = $message = "";
+$nameErr = $phoneErr = $emailErr = $messageErr = "";
+$success = "";
+$error = "";
+
+// Check for success message
+if (isset($_GET['success']) && $_GET['success'] == 1) {
+    $success = "Thank you for contacting us. We will get back to you soon!";
+}
+
+// Check for error message
+if (isset($_GET['error'])) {
+    $error = $_GET['error'];
+}
+
+// Check for form validation errors
+if (isset($_GET['form_error']) && $_GET['form_error'] == 1 && isset($_SESSION['form_errors'])) {
+    $nameErr = $_SESSION['form_errors']['nameErr'];
+    $phoneErr = $_SESSION['form_errors']['phoneErr'];
+    $emailErr = $_SESSION['form_errors']['emailErr'];
+    $messageErr = $_SESSION['form_errors']['messageErr'];
+    
+    // Retrieve form data
+    $name = $_SESSION['form_errors']['form_data']['name'];
+    $phone = $_SESSION['form_errors']['form_data']['phone'];
+    $email = $_SESSION['form_errors']['form_data']['email'];
+    $message = $_SESSION['form_errors']['form_data']['message'];
+    
+    // Clear session data
+    unset($_SESSION['form_errors']);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -9,7 +44,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="viewport" content="initial-scale=1, maximum-scale=1">
       <!-- site metas -->
-      <title>Clients</title>
+      <title>Contact</title>
       <meta name="keywords" content="">
       <meta name="description" content="">
       <meta name="author" content="">
@@ -31,6 +66,28 @@
       <link rel="stylesheet" href="css/owl.carousel.min.css">
       <link rel="stylesheet" href="css/owl.theme.default.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+      <style>
+        .text-danger {
+          color: #dc3545;
+          font-size: 14px;
+          margin-top: 5px;
+          display: block;
+        }
+        .alert {
+          padding: 15px;
+          margin-bottom: 20px;
+          border: 1px solid transparent;
+          border-radius: 4px;
+        }
+        .alert-success {
+          color: #155724;
+          background-color: #d4edda;
+          border-color: #c3e6cb;
+        }
+        .is-invalid {
+          border-color: #dc3545 !important;
+        }
+      </style>
    </head>
    <body>
       <!--header section start -->
@@ -47,11 +104,11 @@
                 <span class="navbar-toggler-icon"></span>
               </button>
               
-              <!-- This will contain all the items that should collapse on mobile -->
+              <!-- menu -->
               <div class="collapse navbar-collapse" id="navbarContent">
-                <!-- Main navigation links -->
+               
                 <ul class="navbar-nav mr-auto">
-                  <li class="nav-item active">
+                  <li class="nav-item">
                     <a class="nav-link" href="index.php">Home</a>
                   </li>
                   <li class="nav-item">
@@ -63,7 +120,7 @@
                   <li class="nav-item">
                     <a class="nav-link" href="clients.html">Client</a>
                   </li>
-                  <li class="nav-item">
+                  <li class="nav-item active">
                     <a class="nav-link" href="contact.php">Contact Us</a>
                   </li>
                 </ul>
@@ -85,56 +142,62 @@
           </div>
       </div>
       <!--header section end -->
-      <!-- client section start -->
-      <div class="client_section layout_padding">
-         <div id="main_slider" class="carousel slide" data-ride="carousel">
-            <div class="carousel-inner">
-               <div class="carousel-item active">
-                  <div class="container">
-                     <h1 class="feature_taital">what is says our customer</h1>
-                     <p class="feature_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking</p>
-                     <div class="client_section_2">
-                        <div class="image_9"><img src="images/img-9.png"></div>
-                        <h3 class="nolmal_text">Normal distribution</h3>
-                        <p class="ipsum_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look</p>
-                        <div class="image_9"><img src="images/icon-10.png"></div>
+      
+      <!-- contact section start -->
+      <div class="contact_section layout_padding">
+         <div class="container">
+            <h1 class="touch_taital">Contact Us</h1>
+            
+            <?php if(!empty($success)): ?>
+            <div class="alert alert-success">
+                <?php echo $success; ?>
+            </div>
+            <?php endif; ?>
+            
+            <div class="contact_section_2">
+               <div class="row">
+                  <div class="col-md-6">
+                     <div class="email_text">
+                        <form method="post" action="send.php">
+                           <div class="form-group">
+                              <input type="text" class="email-bt <?php echo (!empty($nameErr)) ? 'is-invalid' : ''; ?>" 
+                                 placeholder="Name" name="name" value="<?php echo $name; ?>">
+                              <span class="text-danger"><?php echo $nameErr; ?></span>
+                           </div>
+                           <div class="form-group">
+                              <input type="text" class="email-bt <?php echo (!empty($phoneErr)) ? 'is-invalid' : ''; ?>" 
+                                 placeholder="Phone Number" name="phone" value="<?php echo $phone; ?>">
+                              <span class="text-danger"><?php echo $phoneErr; ?></span>
+                           </div>
+                           <div class="form-group">
+                              <input type="text" class="email-bt <?php echo (!empty($emailErr)) ? 'is-invalid' : ''; ?>" 
+                                 placeholder="Email" name="email" value="<?php echo $email; ?>">
+                              <span class="text-danger"><?php echo $emailErr; ?></span>
+                           </div>
+                           <div class="form-group">
+                              <textarea class="massage-bt <?php echo (!empty($messageErr)) ? 'is-invalid' : ''; ?>" 
+                                 placeholder="Message" rows="5" name="message"><?php echo $message; ?></textarea>
+                              <span class="text-danger"><?php echo $messageErr; ?></span>
+                           </div>
+                           <div class="send_btn">
+                              <button type="submit" class="btn">SEND</button>
+                           </div>
+                        </form>
                      </div>
                   </div>
-               </div>
-               <div class="carousel-item">
-                  <div class="container">
-                     <h1 class="feature_taital">FEATURED PRODUCTS</h1>
-                     <p class="feature_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking</p>
-                     <div class="client_section_2">
-                        <div class="image_9"><img src="images/img-9.png"></div>
-                        <h3 class="nolmal_text">Normal distribution</h3>
-                        <p class="ipsum_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look</p>
-                        <div class="image_9"><img src="images/icon-10.png"></div>
-                     </div>
-                  </div>
-               </div>
-               <div class="carousel-item">
-                  <div class="container">
-                     <h1 class="feature_taital">FEATURED PRODUCTS</h1>
-                     <p class="feature_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking</p>
-                     <div class="client_section_2">
-                        <div class="image_9"><img src="images/img-9.png"></div>
-                        <h3 class="nolmal_text">Normal distribution</h3>
-                        <p class="ipsum_text">It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look</p>
-                        <div class="image_9"><img src="images/icon-10.png"></div>
+                  <div class="col-md-6">
+                     <div class="map_main">
+                        <div class="map-responsive">
+                           <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3190.6874465022397!2d10.187512275307679!3d36.89782476219125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12fd34cc25bd5aff%3A0x495e852ae57f3ff5!2sTEK-UP%20University!5e0!3m2!1sfr!2stn!4v1744970803567!5m2!1sfr!2stn"  width="600" height="400" frameborder="0" style="border:0; width: 100%;" allowfullscreen=""></iframe>
+                        </div>
                      </div>
                   </div>
                </div>
             </div>
-            <a class="carousel-control-prev" href="#main_slider" role="button" data-slide="prev">
-            <i class=""><img src="images/left-icon.png"></i>
-            </a>
-            <a class="carousel-control-next" href="#main_slider" role="button" data-slide="next">
-            <i class=""><img src="images/right-icon.png"></i>
-            </a>
          </div>
       </div>
-      <!-- client section end -->
+      <!-- contact section end -->
+      
       <!-- footer section start -->
       <div class="footer_section layout_padding">
          <div class="container">
@@ -166,9 +229,10 @@
                   </div>
                </div>
             </div>
-            
+         </div>
       </div>
       <!-- footer section end -->
+      
       <!-- Javascript files-->
       <script src="js/jquery.min.js"></script>
       <script src="js/popper.min.js"></script>
@@ -188,4 +252,3 @@
       <script src="../../dist/js/bootstrap.min.js"></script>
    </body>
 </html>
-

@@ -1,5 +1,5 @@
 <?php
-include 'check.php';
+include 'check.inc.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,12 +43,12 @@ include 'check.php';
         <img src="images/logo.png" alt="Caraft">
       </a>
       
-      <!-- Toggler for mobile -->
+      <!-- Toggler  -->
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       
-      <!-- This will contain all the items that should collapse on mobile -->
+    
       <div class="collapse navbar-collapse" id="navbarContent">
         <!-- Main navigation links -->
         <ul class="navbar-nav mr-auto">
@@ -59,40 +59,40 @@ include 'check.php';
             <a class="nav-link" href="category.html">Category</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="products.html">Products</a>
+            <a class="nav-link" href="products.php">Products</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="clients.html">Client</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="contact.html">Contact Us</a>
+            <a class="nav-link" href="contact.php">Contact Us</a>
           </li>
         </ul>
         
-        <!-- Right-aligned items - Modified for login/logout -->
+        <!-- Dropdown for login/logout -->
         <ul class="navbar-nav ml-auto search_section">
           <?php if(isLoggedIn()): ?>
-            <!-- Show user account dropdown if logged in -->
+            <!--  -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <?php echo getUserName(); ?>
               </a>
               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                 <a class="dropdown-item" href="profile.php">My Profile</a>
-                <a class="dropdown-item" href="orders.php">My Orders</a>
+                <a class="dropdown-item" href="order.php">My Orders</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="logout.php">Logout</a>
               </div>
             </li>
           <?php else: ?>
-            <!-- Show login link if not logged in -->
+            <!--  -->
             <li class="nav-item">
               <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Log In</a>
             </li>
           <?php endif; ?>
           
           <li class="nav-item">
-            <a class="nav-link" href="#"><img src="images/shopping-bag.png" alt="Cart"></a>
+            <a class="nav-link" href="order.php"><img src="images/shopping-bag.png" alt="Cart"></a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#"><img src="images/search-icon.png" alt="Search"></a>
@@ -181,14 +181,14 @@ include 'check.php';
         </button>
       </div>
       <div class="modal-body">
-        <!-- Display login error message if any -->
+        <!-- login error  -->
         <?php if(isset($_SESSION['login_error'])): ?>
           <div class="alert alert-danger">
             <?php echo $_SESSION['login_error']; unset($_SESSION['login_error']); ?>
           </div>
         <?php endif; ?>
         
-        <!-- The form now points to login_process.php -->
+        <!-- The form  -->
         <form class="login-form" action="login.php" method="post">
           <div class="form-group">
             <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
@@ -308,7 +308,7 @@ include 'check.php';
      
      <div class="category_grid">
        <div class="category_card category_featured">
-         <img src="images/fashion-category.jpg" alt="Fashion" class="category_image">
+         <img src="images/im1.webp" alt="Fashion" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Fashion</h3>
            <p class="category_count">120 products</p>
@@ -317,7 +317,7 @@ include 'check.php';
        </div>
        
        <div class="category_card">
-         <img src="images/electronics-category.jpg" alt="Electronics" class="category_image">
+         <img src="images/im4.webp" alt="Electronics" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Electronics</h3>
            <p class="category_count">85 products</p>
@@ -326,7 +326,7 @@ include 'check.php';
        </div>
        
        <div class="category_card">
-         <img src="images/home-decor-category.jpg" alt="Home Decor" class="category_image">
+         <img src="images/im3.webp" alt="Home Decor" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Home Decor</h3>
            <p class="category_count">64 products</p>
@@ -335,7 +335,7 @@ include 'check.php';
        </div>
        
        <div class="category_card">
-         <img src="images/beauty-category.jpg" alt="Beauty" class="category_image">
+         <img src="images/im6.webp" alt="Beauty" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Beauty</h3>
            <p class="category_count">42 products</p>
@@ -344,7 +344,7 @@ include 'check.php';
        </div>
        
        <div class="category_card">
-         <img src="images/accessories-category.jpg" alt="Accessories" class="category_image">
+         <img src="images/im5.webp" alt="Accessories" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Accessories</h3>
            <p class="category_count">96 products</p>
@@ -353,7 +353,7 @@ include 'check.php';
        </div>
        
        <div class="category_card">
-         <img src="images/shoes-category.jpg" alt="Shoes" class="category_image">
+         <img src="images/im2.webp" alt="Shoes" class="category_image">
          <div class="category_overlay">
            <h3 class="category_name">Shoes</h3>
            <p class="category_count">78 products</p>
@@ -415,7 +415,7 @@ include 'check.php';
        </div>
        <div class="col-lg-6 col-md-12">
          <div class="about_us_image">
-           <img src="/api/placeholder/600/400" alt="About Us" class="img-fluid about_main_image">
+           <img src="images/undraw_about-us-page_dbh0.svg" alt="About Us" class="img-fluid about_main_image">
          </div>
        </div>
      </div>
@@ -451,7 +451,7 @@ include 'check.php';
        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
          <div class="service_box">
            <div class="service_icon">
-             <i class="fa fa-life-ring"></i>
+           <i class="fa fa-phone" aria-hidden="true"></i>
            </div>
            <h3 class="service_title">24/7 Support</h3>
            <p class="service_description">Our dedicated customer service team is available around the clock to assist with any questions or concerns.</p>
@@ -531,15 +531,11 @@ include 'check.php';
                   </div>
                </div>
             </div>
-            <div class="copyright_section">
-               <h1 class="copyright_text">
-               Copyright 2020 All Right Reserved <a href="https://html.design"> Free Html Templates</a>
-            </div>
+            
          </div>
       </div>
       <!-- footer section end -->
-      <!-- Rest of the page content (beauty product section, trending products, etc.) -->
-      <!-- I've kept it short here for brevity but your actual page would have all this content -->
+      
       
       <!-- Javascript files-->
       <script src="js/jquery.min.js"></script>
